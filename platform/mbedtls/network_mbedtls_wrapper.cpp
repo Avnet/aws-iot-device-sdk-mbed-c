@@ -44,8 +44,8 @@
 
 #include "awscerts.h"
 
-/* This is the value used for ssl read timeout */
-#define IOT_SSL_READ_TIMEOUT 10
+/* This is the value used for ssl read timeout (in msec) */
+#define IOT_SSL_READ_TIMEOUT 10000
 
 /* This defines the value of the debug buffer that gets allocated.
  * The value can be altered based on memory constraints
@@ -365,25 +365,24 @@ IoT_Error_t iot_tls_read(Network *pNetwork, unsigned char *pMsg, size_t len, aws
 {
     mbedtls_ssl_context *ssl = &(pNetwork->tlsDataParams.ssl);
     size_t rxLen = 0;
-    int ret;
+    int ret=0;
     FUNC_ENTRY;
 
     while (len > 0) {
         // This read will timeout after IOT_SSL_READ_TIMEOUT if there's no data to be read
-        ret = mbedtls_ssl_read(ssl, pMsg, len);
+
+        while( ret == 0 && !has_timer_expired(timer) )
+            ret = mbedtls_ssl_read(ssl, pMsg, len);
+
         if (ret > 0) {
             rxLen += ret;
             pMsg += ret;
             len -= ret;
-        } else if (ret == 0 || (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE && ret != MBEDTLS_ERR_SSL_TIMEOUT)) {
+            } 
+        else if (ret == 0 || (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE && ret != MBEDTLS_ERR_SSL_TIMEOUT)) {
             FUNC_EXIT_RC(NETWORK_SSL_READ_ERROR);
+            }
         }
-
-        // Evaluate timeout after the read to make sure read is done at least once
-        if (has_timer_expired(timer)) {
-            break;
-        }
-    }
 
     if (len == 0) {
         *read_len = rxLen;

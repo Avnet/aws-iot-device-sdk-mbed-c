@@ -179,19 +179,11 @@ void aws_subscribe_publish_task()
     if(publishCount != 0) {
         infinitePublishFlag = false;
         }
-printf("JMF: start publish/subscribe [rc=0x%04X]\n",rc);
-    while( (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || SUCCESS == rc)
-            && (publishCount > 0 || infinitePublishFlag)) {
 
-printf("JMF: yield for 100 msec...");
-        //Max time the yield function will wait for read messages
-        rc = aws_iot_mqtt_yield(&client, 100);
-printf("rc=0x%04X\n",rc);
-        if(NETWORK_ATTEMPTING_RECONNECT == rc) // If the client is attempting to reconnect we will skip the rest of the loop.
-            continue;
-
+//    printf("JMF: start publish/subscribe [rc=0x%04X]\n",rc);
+    while( (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || SUCCESS == rc) && (publishCount > 0 || infinitePublishFlag)) {
         IOT_INFO("-->sleep");
-        wait(1);
+        wait(5);
         sprintf(cPayload, "%s : %ld ", "hello from SDK QOS0", i++);
         paramsQOS0.payloadLen = strlen(cPayload);
         rc = aws_iot_mqtt_publish(&client, "sdkTest/sub", 11, &paramsQOS0);
@@ -207,6 +199,10 @@ printf("rc=0x%04X\n",rc);
             }
         if(publishCount > 0) 
             publishCount--;
+
+//        printf("JMF: yield for 100 msec...");
+        //Max time the yield function will wait for read messages
+//        rc = aws_iot_mqtt_yield(&client, 100);
         }
 
     if(SUCCESS != rc) {

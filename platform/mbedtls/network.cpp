@@ -109,16 +109,19 @@ int mbedtls_aws_accept( mbedtls_net_context *bind_ctx,
 /*
  * Set the socket blocking or non-blocking
  */
-//int mbedtls_aws_set_block( mbedtls_net_context *ctx )
-//{
-//    return network->set_blocking(true);
-//}
+int mbedtls_aws_set_block( mbedtls_net_context *ctx )
+{
+//printf("JMFNETWORK:%s:%d enable blocking\n",__FILE__,__LINE__);
+        mbedtls_socket.set_blocking(true);
+        return 0;
+}
 
-//int mbedtls_aws_set_nonblock( mbedtls_net_context *ctx )
-//{
-//    FUNC_ENTRY;
-//    return network->set_blocking(false);
-//}
+int mbedtls_aws_set_nonblock( mbedtls_net_context *ctx )
+{
+//printf("JMFNETWORK:%s:%d disable blocking\n",__FILE__,__LINE__);
+    mbedtls_socket.set_blocking(false);
+    return 0;
+}
 
 /*
  * Portable usleep helper
@@ -156,6 +159,7 @@ int mbedtls_aws_recv( void *ctx, unsigned char *buf, size_t len )
  */
 int mbedtls_aws_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_t timeout )
 {
+//printf("JMFNETWORK:%s:%d asking to read %d byes with a timeout of %d\n",__FILE__,__LINE__, len, (int)timeout);
     int   ret, ttime;
     Timer t;
     int   fd = ((mbedtls_net_context *) ctx)->fd;
@@ -167,10 +171,15 @@ int mbedtls_aws_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_
     do {
         ret = mbedtls_socket.recv( buf, len );
         ttime = t.read_ms();
+        if( ret == 0 && ttime < (int)timeout )
+            ret = mbedtls_socket.recv( buf, len );
        }
     while( ttime < (int)timeout && ret == NSAPI_ERROR_WOULD_BLOCK );
+//printf("JMFNETWORK:%s:%d read loop has ret = %d (ttime=%d)\n",__FILE__,__LINE__, ret,ttime);
+
     if( ret < 0 && ttime >= (int)timeout )
         ret = MBEDTLS_ERR_SSL_TIMEOUT;
+//printf("JMFNETWORK:%s:%d leaving with a count of %d\n",__FILE__,__LINE__, ret);
     FUNC_EXIT_RC(ret);
 }
 

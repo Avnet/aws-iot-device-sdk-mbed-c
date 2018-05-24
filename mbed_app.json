@@ -2,7 +2,6 @@
     "macros": [
         "MBEDTLS_USER_CONFIG_FILE=\"mbedtls_entropy_config.h\"",
         "ENABLE_IOT_INFO=1",
-        "ENABLE_IOT_DEBUG=1",
         "ENABLE_IOT_WARN=1",
         "ENABLE_IOT_ERROR=1",
         "DEFAULT_APN=\"m2m.com.attz\""
@@ -24,7 +23,7 @@
         },
         "wnc_debug_setting": {
             "help" : "bit value 1 and/or 2 enable WncController debug output, bit value 4 enables mbed driver debug output.",
-            "value": "0x0"
+            "value": "0"
         },
         "bg96_debug": {
             "help" : "enable or disable BG96 debug messages.",

@@ -47,7 +47,7 @@ extern "C" {
  * in "timer_<platform>.h" and include that file above.
  *
  */
-//typedef MbedTimer awsTimer;
+typedef struct awsTimer  awsTimer;
 
 /**
  * @brief Check if a timer is expired

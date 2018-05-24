@@ -13,22 +13,29 @@
  * permissions and limitations under the License.
  */
 
-#ifndef __TIMER_PLATFORM_H__
-#define __TIMER_PLATFORM_H__
+#ifndef SRC_PROTOCOL_MQTT_AWS_IOT_EMBEDDED_CLIENT_WRAPPER_PLATFORM_LINUX_COMMON_TIMER_PLATFORM_H_
+#define SRC_PROTOCOL_MQTT_AWS_IOT_EMBEDDED_CLIENT_WRAPPER_PLATFORM_LINUX_COMMON_TIMER_PLATFORM_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct {
-    void* the_timer;
-    uint32_t ms_timeout;
-} awsTimer;
+/**
+ * @file timer_platform.h
+ */
+#include <sys/time.h>
+#include <sys/select.h>
+#include "timer_interface.h"
+
+/**
+ * definition of the Timer struct. Platform specific
+ */
+struct awsTimer {
+	struct timeval end_time;
+};
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif 
-
-
+#endif /* SRC_PROTOCOL_MQTT_AWS_IOT_EMBEDDED_CLIENT_WRAPPER_PLATFORM_LINUX_COMMON_TIMER_PLATFORM_H_ */
