@@ -23,13 +23,25 @@ extern "C" {
 /**
  * @file timer_platform.h
  */
+#include "timer_interface.h"
+
+#ifdef ONLINE_COMPILER   //only do this for on-line compiler
+
+struct timeval { 
+    long int tv_sec;
+    long int tv_usec;
+    };
+#else  //else ONLINE_COMPILER
+ 
 #include <sys/time.h>
 #include <sys/select.h>
-#include "timer_interface.h"
+
+#endif  //end ONLINE_COMPILER
 
 /**
  * definition of the Timer struct. Platform specific
  */
+
 struct awsTimer {
 	struct timeval end_time;
 };
