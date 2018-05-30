@@ -21,7 +21,6 @@
 #include "mbed.h"
 
 #include "easy-connect.h"
-//#include "WNC14A2AInterface.h"
 
 #define MBEDTLS_FS_IO 1
 
@@ -81,7 +80,6 @@ void mbedtls_aws_init( mbedtls_net_context *ctx )
  */
 int mbedtls_aws_connect( mbedtls_net_context *ctx, const char *host, uint16_t port, int proto )
 {
-    int fd = ((mbedtls_net_context *) ctx)->fd;
     FUNC_ENTRY;
     if( !network_connected ) {
         IOT_DEBUG("No network connection");

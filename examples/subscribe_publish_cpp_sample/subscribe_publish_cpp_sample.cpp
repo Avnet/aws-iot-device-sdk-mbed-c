@@ -24,27 +24,14 @@
 #include "aws_iot_mqtt_client_interface.h"
 
 #include "easy-connect.h"
-#include "mbed-trace/mbed_trace.h"
-
-//#include "WNC14A2AInterface.h"
 
 /**
  * @brief Default cert location
  */
-//char certDirectory[PATH_MAX + 1];
-//char rootCA[PATH_MAX + 1];
-//char clientCRT[PATH_MAX + 1];
-//char clientKey[PATH_MAX + 1];
-//char CurrentWD[PATH_MAX + 1];
 char cPayload[100];
 
-//Thread aws_subscribe_publish(osPriorityNormal, 16*1024, NULL);
 Thread aws_subscribe_publish(osPriorityNormal, 8*1024, NULL);
 void   aws_subscribe_publish_task(void);
-
-void trace_printer(const char* str) {
-    printf("%s\r\n",str);
-}
 
 /**
  * @brief This parameter will avoid infinite loop of publish and exit the program after certain number of publishes
@@ -86,9 +73,6 @@ void disconnectCallbackHandler(AWS_IoT_Client *pClient, void *data)
 
 int main() 
 {
-    mbed_trace_init();
-    mbed_trace_print_function_set(trace_printer);
-
     printf("AWS %s Example.\n",__FILE__);
     IOT_INFO("\nAWS IoT SDK Version %d.%d.%d-%s\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_TAG);
 
@@ -112,20 +96,7 @@ void aws_subscribe_publish_task()
     IoT_Publish_Message_Params paramsQOS0;
     IoT_Publish_Message_Params paramsQOS1;
 
-//    memset(rootCA, 0x00, sizeof(rootCA));
-//    memset(clientCRT, 0x00, sizeof(clientCRT));
-//    memset(clientKey, 0x00, sizeof(clientKey));
-//    memset(CurrentWD, 0x00, sizeof(CurrentWD));
     memset(cPayload, 0x00, sizeof(cPayload));
-//    memset(certDirectory, 0x00, sizeof(certDirectory));
-
-//    snprintf(rootCA, sizeof(rootCA), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_ROOT_CA_FILENAME);
-//    snprintf(clientCRT, sizeof(clientCRT), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_CERTIFICATE_FILENAME);
-//    snprintf(clientKey, sizeof(clientKey), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_PRIVATE_KEY_FILENAME);
-
-//    IOT_DEBUG("rootCA %s", rootCA);
-//    IOT_DEBUG("clientCRT %s", clientCRT);
-//    IOT_DEBUG("clientKey %s", clientKey);
 
     mqttInitParams.enableAutoReconnect = false; // We enable this later below
     mqttInitParams.pHostURL = AWS_IOT_MQTT_HOST;

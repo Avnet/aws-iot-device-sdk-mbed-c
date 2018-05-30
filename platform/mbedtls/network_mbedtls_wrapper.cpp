@@ -16,7 +16,6 @@
 #include "mbed.h"
 
 #include "easy-connect.h"
-//#include "WNC14A2AInterface.h"
 
 #define MBEDTLS_FS_IO 1
 
@@ -59,8 +58,6 @@ void mbedtls_aws_init( mbedtls_net_context * );
 int  mbedtls_aws_connect( mbedtls_net_context *, const char *host, uint16_t port, int proto );
 int  mbedtls_aws_bind( mbedtls_net_context *, const char *bind_ip, const char *port, int proto );
 int  mbedtls_aws_accept( mbedtls_net_context *bind_ctx, mbedtls_net_context *client_ctx, void *client_ip, size_t buf_size, size_t *ip_len ) ;
-//int  mbedtls_aws_set_block( mbedtls_net_context * );
-//int  mbedtls_aws_set_nonblock( mbedtls_net_context * );
 void mbedtls_aws_usleep( unsigned long );
 int  mbedtls_aws_recv( void *, unsigned char *, size_t );
 int  mbedtls_aws_recv_timeout( void *, unsigned char *, size_t , uint32_t );
