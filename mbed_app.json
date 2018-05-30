@@ -1,6 +1,7 @@
 {
     "macros": [
         "MBEDTLS_USER_CONFIG_FILE=\"mbedtls_entropy_config.h\"",
+        "ONLINE_COMPILER=1",
         "ENABLE_IOT_INFO=1",
         "ENABLE_IOT_WARN=1",
         "ENABLE_IOT_ERROR=1",
