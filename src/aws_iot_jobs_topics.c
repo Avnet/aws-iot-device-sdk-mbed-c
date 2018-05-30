@@ -75,16 +75,16 @@ static const char *_get_suffix_for_topic_type(AwsIotJobExecutionTopicReplyType r
 	switch (replyType) {
 	case JOB_REQUEST_TYPE:
 		return "";
-		break;
+//		break;
 	case JOB_ACCEPTED_REPLY_TYPE:
 		return "/" ACCEPTED_REPLY;
-		break;
+//		break;
 	case JOB_REJECTED_REPLY_TYPE:
 		return "/" REJECTED_REPLY;
-		break;
+//		break;
 	case JOB_WILDCARD_REPLY_TYPE:
 		return "/" WILDCARD_REPLY;
-		break;
+//		break;
 	case JOB_UNRECOGNIZED_TOPIC_TYPE:
 	default:
 		return NULL;
