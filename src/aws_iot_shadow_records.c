@@ -107,7 +107,7 @@ void initDeltaTokens(void) {
 
 IoT_Error_t registerJsonTokenOnDelta(jsonStruct_t *pStruct) {
 
-	IoT_Error_t rc = SUCCESS;
+	IoT_Error_t rc = AWS_SUCCESS;
 
 	if(!deltaTopicSubscribedFlag) {
 		snprintf(shadowDeltaTopic, MAX_SHADOW_TOPIC_LENGTH_BYTES, "$aws/things/%s/shadow/update/delta", myThingName);
@@ -251,7 +251,7 @@ static void unsubscribeFromAcceptedAndRejected(uint8_t index) {
 
 	char TemporaryTopicNameAccepted[MAX_SHADOW_TOPIC_LENGTH_BYTES];
 	char TemporaryTopicNameRejected[MAX_SHADOW_TOPIC_LENGTH_BYTES];
-	IoT_Error_t ret_val = SUCCESS;
+	IoT_Error_t ret_val = AWS_SUCCESS;
 
 	int16_t indexSubList;
 
@@ -265,7 +265,7 @@ static void unsubscribeFromAcceptedAndRejected(uint8_t index) {
 		if(!SubscriptionList[indexSubList].isSticky && (SubscriptionList[indexSubList].count == 1)) {
 			ret_val = aws_iot_mqtt_unsubscribe(pMqttClient, TemporaryTopicNameAccepted,
 											   (uint16_t) strlen(TemporaryTopicNameAccepted));
-			if(ret_val == SUCCESS) {
+			if(ret_val == AWS_SUCCESS) {
 				SubscriptionList[indexSubList].isFree = true;
 			}
 		} else if(SubscriptionList[indexSubList].count > 1) {
@@ -278,7 +278,7 @@ static void unsubscribeFromAcceptedAndRejected(uint8_t index) {
 		if(!SubscriptionList[indexSubList].isSticky && (SubscriptionList[indexSubList].count == 1)) {
 			ret_val = aws_iot_mqtt_unsubscribe(pMqttClient, TemporaryTopicNameRejected,
 											   (uint16_t) strlen(TemporaryTopicNameRejected));
-			if(ret_val == SUCCESS) {
+			if(ret_val == AWS_SUCCESS) {
 				SubscriptionList[indexSubList].isFree = true;
 			}
 		} else if(SubscriptionList[indexSubList].count > 1) {
@@ -330,7 +330,7 @@ bool isSubscriptionPresent(const char *pThingName, ShadowActions_t action) {
 }
 
 IoT_Error_t subscribeToShadowActionAcks(const char *pThingName, ShadowActions_t action, bool isSticky) {
-	IoT_Error_t ret_val = SUCCESS;
+	IoT_Error_t ret_val = AWS_SUCCESS;
 
 	bool clearBothEntriesFromList = true;
 	int16_t indexAcceptedSubList = 0;
@@ -344,7 +344,7 @@ IoT_Error_t subscribeToShadowActionAcks(const char *pThingName, ShadowActions_t 
 		ret_val = aws_iot_mqtt_subscribe(pMqttClient, SubscriptionList[indexAcceptedSubList].Topic,
 										 (uint16_t) strlen(SubscriptionList[indexAcceptedSubList].Topic), QOS0,
 										 AckStatusCallback, NULL);
-		if(ret_val == SUCCESS) {
+		if(ret_val == AWS_SUCCESS) {
 			SubscriptionList[indexAcceptedSubList].count = 1;
 			SubscriptionList[indexAcceptedSubList].isSticky = isSticky;
 			topicNameFromThingAndAction(SubscriptionList[indexRejectedSubList].Topic, pThingName, action,
@@ -352,7 +352,7 @@ IoT_Error_t subscribeToShadowActionAcks(const char *pThingName, ShadowActions_t 
 			ret_val = aws_iot_mqtt_subscribe(pMqttClient, SubscriptionList[indexRejectedSubList].Topic,
 											 (uint16_t) strlen(SubscriptionList[indexRejectedSubList].Topic), QOS0,
 											 AckStatusCallback, NULL);
-			if(ret_val == SUCCESS) {
+			if(ret_val == AWS_SUCCESS) {
 				SubscriptionList[indexRejectedSubList].count = 1;
 				SubscriptionList[indexRejectedSubList].isSticky = isSticky;
 				clearBothEntriesFromList = false;
@@ -403,7 +403,7 @@ void incrementSubscriptionCnt(const char *pThingName, ShadowActions_t action, bo
 }
 
 IoT_Error_t publishToShadowAction(const char *pThingName, ShadowActions_t action, const char *pJsonDocumentToBeSent) {
-	IoT_Error_t ret_val = SUCCESS;
+	IoT_Error_t ret_val = AWS_SUCCESS;
 	char TemporaryTopicName[MAX_SHADOW_TOPIC_LENGTH_BYTES];
 	IoT_Publish_Message_Params msgParams;
 

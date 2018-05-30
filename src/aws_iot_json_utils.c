@@ -56,7 +56,7 @@ IoT_Error_t parseUnsignedInteger32Value(uint32_t *i, const char *jsonString, jsm
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseUnsignedInteger16Value(uint16_t *i, const char *jsonString, jsmntok_t *token) {
@@ -70,7 +70,7 @@ IoT_Error_t parseUnsignedInteger16Value(uint16_t *i, const char *jsonString, jsm
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseUnsignedInteger8Value(uint8_t *i, const char *jsonString, jsmntok_t *token) {
@@ -84,7 +84,7 @@ IoT_Error_t parseUnsignedInteger8Value(uint8_t *i, const char *jsonString, jsmnt
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseInteger32Value(int32_t *i, const char *jsonString, jsmntok_t *token) {
@@ -98,7 +98,7 @@ IoT_Error_t parseInteger32Value(int32_t *i, const char *jsonString, jsmntok_t *t
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseInteger16Value(int16_t *i, const char *jsonString, jsmntok_t *token) {
@@ -112,7 +112,7 @@ IoT_Error_t parseInteger16Value(int16_t *i, const char *jsonString, jsmntok_t *t
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseInteger8Value(int8_t *i, const char *jsonString, jsmntok_t *token) {
@@ -126,7 +126,7 @@ IoT_Error_t parseInteger8Value(int8_t *i, const char *jsonString, jsmntok_t *tok
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseFloatValue(float *f, const char *jsonString, jsmntok_t *token) {
@@ -140,7 +140,7 @@ IoT_Error_t parseFloatValue(float *f, const char *jsonString, jsmntok_t *token) 
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseDoubleValue(double *d, const char *jsonString, jsmntok_t *token) {
@@ -154,7 +154,7 @@ IoT_Error_t parseDoubleValue(double *d, const char *jsonString, jsmntok_t *token
 		return JSON_PARSE_ERROR;
 	}
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseBooleanValue(bool *b, const char *jsonString, jsmntok_t *token) {
@@ -170,7 +170,7 @@ IoT_Error_t parseBooleanValue(bool *b, const char *jsonString, jsmntok_t *token)
 		IOT_WARN("Token was not a bool.");
 		return JSON_PARSE_ERROR;
 	}
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 IoT_Error_t parseStringValue(char *buf, size_t bufLen, const char *jsonString, jsmntok_t *token) {
@@ -190,7 +190,7 @@ IoT_Error_t parseStringValue(char *buf, size_t bufLen, const char *jsonString, j
 	strncpy(buf, jsonString + token->start, stringLength);
 	buf[stringLength] = '\0';
 
-	return SUCCESS;
+	return AWS_SUCCESS;
 }
 
 jsmntok_t *findToken(const char *key, const char *jsonString, jsmntok_t *token) {

@@ -7,59 +7,25 @@
         "DEFAULT_APN=\"m2m.com.attz\""
     ],
     "config": {
-       "main-stack-size":{
-           "value": 4096
-       },
-       "thread-stack-size":{
-           "value": 16384
-       },
         "network-interface":{
-            "help": "options are ETHERNET, WIFI_ESP8266, WIFI_ODIN, WIFI_IDW01M1, WIFI_RTW, MESH_LOWPAN_ND, MESH_THREAD, CELLULAR_WNC14A2A, CELLULAR_BG96",
-            "value": "CELLULAR_WNC14A2A"
+            "help": "options are ETHERNET, CELLULAR_WNC14A2A, CELLULAR_BG96",
+            "value": "CELLULAR_BG96"
         },
-        "wnc_debug": {
-            "help" : "enable or disable WNC debug messages.",
-            "value": 1
-        },
-        "wnc_debug_setting": {
-            "help" : "bit value 1 and/or 2 enable WncController debug output, bit value 4 enables mbed driver debug output.",
-            "value": "0"
-        },
-        "bg96_debug": {
+        "bg96-debug": {
             "help" : "enable or disable BG96 debug messages.",
-            "value": 0
+            "value": "false"
         },
-        "bg96-debug-setting": {
-            "help" : "bit value 1 and/or 2 enable WncController debug output, bit value 4 enables mbed driver debug output.",
-            "value": "0x84"
-        },
-        "esp8266-tx": {
-            "help": "Pin used as TX (connects to ESP8266 RX)",
-            "value": "PTD3"
-        },
-        "esp8266-rx": {
-            "help": "Pin used as RX (connects to ESP8266 TX)",
-            "value": "PTD2"
-        },
-        "esp8266-debug": {
-            "value": true
-        },
-        "wifi-ssid": {
-            "value": "\"SSID\""
-        },
-        "wifi-password": {
-            "value": "\"Password\""
+        "bg96-debug_setting": {
+            "help" : "bit value 1 and/or 2 enable debug output, bit value 4 enables mbed driver debug output.",
+            "value": "0xac"
         }
     },
     "target_overrides": {
         "*": {
+             "target.features_add":["COMMON_PAL"],
+             "mbed-trace.enable": 1,
              "platform.stdio-baud-rate": 115200,
              "platform.stdio-convert-newlines": true
-        },
-        "UBLOX_EVK_ODIN_W2": {
-            "target.device_has_remove": ["EMAC"]
         }
     }
 }
-
-

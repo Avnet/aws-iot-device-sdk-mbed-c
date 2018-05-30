@@ -16,7 +16,7 @@
 #include "mbed.h"
 
 #include "easy-connect.h"
-#include "WNC14A2AInterface.h"
+//#include "WNC14A2AInterface.h"
 
 #define MBEDTLS_FS_IO 1
 
@@ -122,7 +122,7 @@ IoT_Error_t iot_tls_init(Network *pNetwork, char *pRootCALocation, char *pDevice
 
     pNetwork->tlsDataParams.flags = 0;
 
-    FUNC_EXIT_RC( SUCCESS);
+    FUNC_EXIT_RC( AWS_SUCCESS);
 }
 
 IoT_Error_t iot_tls_is_connected(Network *pNetwork) 
@@ -154,7 +154,6 @@ IoT_Error_t iot_tls_connect(Network *pNetwork, TLSConnectParams *params)
 
     tlsDataParams = &(pNetwork->tlsDataParams);
 
-    mbedtls_aws_init(&(tlsDataParams->server_fd));
 
     mbedtls_entropy_init(&(tlsDataParams->entropy));
     mbedtls_ctr_drbg_init(&(tlsDataParams->ctr_drbg));
@@ -241,7 +240,7 @@ IoT_Error_t iot_tls_connect(Network *pNetwork, TLSConnectParams *params)
 
     if((ret = mbedtls_ssl_conf_own_cert(&(tlsDataParams->conf), &(tlsDataParams->clicert), 
                    &(tlsDataParams->pkey))) != 0) {
-        IOT_ERROR(" failed\n  ! mbedtls_ssl_conf_own_cert returned %d\n\n", ret);
+        IOT_ERROR(" failed\n!!! mbedtls_ssl_conf_own_cert returned %d\n\n", ret);
         FUNC_EXIT_RC(SSL_CONNECTION_ERROR);
         }
 
@@ -254,6 +253,12 @@ IoT_Error_t iot_tls_connect(Network *pNetwork, TLSConnectParams *params)
             FUNC_EXIT_RC(SSL_CONNECTION_ERROR);
         }
     }
+
+    mbedtls_aws_init(&(tlsDataParams->server_fd));
+    if( (tlsDataParams->server_fd).fd == -1 ) {
+        IOT_ERROR(" Network connected failed!\n");
+        FUNC_EXIT_RC(NETWORK_ERR_NET_CONNECT_FAILED);
+        }
 
     IOT_DEBUG("Connecting to %s/%d...", pNetwork->tlsConnectParams.pDestinationURL, pNetwork->tlsConnectParams.DestinationPort);
     if((ret = mbedtls_aws_connect(&(tlsDataParams->server_fd), pNetwork->tlsConnectParams.pDestinationURL, 
@@ -275,7 +280,7 @@ IoT_Error_t iot_tls_connect(Network *pNetwork, TLSConnectParams *params)
 
     while((ret = mbedtls_ssl_handshake(&(tlsDataParams->ssl))) != 0) {
         if(ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-            IOT_ERROR(" failed\n  ! mbedtls_ssl_handshake returned -0x%x\n", -ret);
+            IOT_ERROR(" failed\n  ! mbedtls_ssl_handshake returned -0x%x (%d)\n", -ret, ret);
             if(ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
                 IOT_ERROR( "Unable to verify the server's certificate.  Either it is invalid, or you\n"
                            "didn't set ca_file or ca_path to an appropriate value.  Alternatively,\n"
@@ -303,11 +308,11 @@ IoT_Error_t iot_tls_connect(Network *pNetwork, TLSConnectParams *params)
             ret = SSL_CONNECTION_ERROR;
         } else {
             IOT_DEBUG("Verified OK\n");
-            ret = SUCCESS;
+            ret = AWS_SUCCESS;
         }
     } else {
         IOT_DEBUG("Server Verification skipped\n");
-        ret = SUCCESS;
+        ret = AWS_SUCCESS;
     }
 
 #ifdef ENABLE_IOT_DEBUG
@@ -358,7 +363,7 @@ IoT_Error_t iot_tls_write(Network *pNetwork, unsigned char *pMsg, size_t len, aw
         FUNC_EXIT_RC(NETWORK_SSL_WRITE_TIMEOUT_ERROR);
     }
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t iot_tls_read(Network *pNetwork, unsigned char *pMsg, size_t len, awsTimer *timer, size_t *read_len) 
@@ -386,7 +391,7 @@ IoT_Error_t iot_tls_read(Network *pNetwork, unsigned char *pMsg, size_t len, aws
 
     if (len == 0) {
         *read_len = rxLen;
-        FUNC_EXIT_RC(SUCCESS);
+        FUNC_EXIT_RC(AWS_SUCCESS);
     }
 
     if (rxLen == 0) {
@@ -408,7 +413,7 @@ IoT_Error_t iot_tls_disconnect(Network *pNetwork)
     /* All other negative return values indicate connection needs to be reset.
      * No further action required since this is disconnect call */
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t iot_tls_destroy(Network *pNetwork) 
@@ -426,7 +431,7 @@ IoT_Error_t iot_tls_destroy(Network *pNetwork)
     mbedtls_ctr_drbg_free(&(tlsDataParams->ctr_drbg));
     mbedtls_entropy_free(&(tlsDataParams->entropy));
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 

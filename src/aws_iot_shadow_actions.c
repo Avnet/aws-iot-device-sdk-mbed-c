@@ -32,7 +32,7 @@ extern "C" {
 IoT_Error_t aws_iot_shadow_internal_action(const char *pThingName, ShadowActions_t action,
 										   const char *pJsonDocumentToBeSent, size_t jsonSize, fpActionCallback_t callback,
 										   void *pCallbackContext, uint32_t timeout_seconds, bool isSticky) {
-	IoT_Error_t ret_val = SUCCESS;
+	IoT_Error_t ret_val = AWS_SUCCESS;
 	bool isClientTokenPresent = false;
 	bool isAckWaitListFree = false;
 	uint8_t indexAckWaitList;
@@ -63,11 +63,11 @@ IoT_Error_t aws_iot_shadow_internal_action(const char *pThingName, ShadowActions
 		}
 	}
 
-	if(SUCCESS == ret_val) {
+	if(AWS_SUCCESS == ret_val) {
 		ret_val = publishToShadowAction(pThingName, action, pJsonDocumentToBeSent);
 	}
 
-	if(isClientTokenPresent && (NULL != callback) && (SUCCESS == ret_val) && isAckWaitListFree) {
+	if(isClientTokenPresent && (NULL != callback) && (AWS_SUCCESS == ret_val) && isAckWaitListFree) {
 		addToAckWaitList(indexAckWaitList, pThingName, action, extractedClientToken, callback, pCallbackContext,
 						 timeout_seconds);
 	}

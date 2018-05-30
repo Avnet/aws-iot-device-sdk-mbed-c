@@ -38,17 +38,17 @@ extern "C" {
 #endif
 
 typedef enum {
-	JOB_EXECUTION_STATUS_NOT_SET = 0,
-	JOB_EXECUTION_QUEUED,
-	JOB_EXECUTION_IN_PROGRESS,
-	JOB_EXECUTION_FAILED,
-	JOB_EXECUTION_SUCCEEDED,
-	JOB_EXECUTION_CANCELED,
-	JOB_EXECUTION_REJECTED,
-	/***
-	 * Used for any status not in the supported list of statuses
-	 */
-	JOB_EXECUTION_UNKNOWN_STATUS = 99
+    JOB_EXECUTION_STATUS_NOT_SET = 0,
+    JOB_EXECUTION_QUEUED,
+    JOB_EXECUTION_IN_PROGRESS,
+    JOB_EXECUTION_FAILED,
+    JOB_EXECUTION_SUCCEEDED,
+    JOB_EXECUTION_CANCELED,
+    JOB_EXECUTION_REJECTED,
+    /***
+     * Used for any status not in the supported list of statuses
+     */
+    JOB_EXECUTION_UNKNOWN_STATUS = 99
 } JobExecutionStatus;
 
 extern const char *JOB_EXECUTION_QUEUED_STR;
@@ -76,30 +76,30 @@ const char *aws_iot_jobs_map_status_to_string(JobExecutionStatus status);
  * A request to update the status of a job execution.
  */
 typedef struct {
-	int64_t expectedVersion;	// set to 0 to ignore
-	int64_t executionNumber;	// set to 0 to ignore
-	JobExecutionStatus status;
-	const char *statusDetails;
-	bool includeJobExecutionState;
-	bool includeJobDocument;
-	const char *clientToken;
+    int64_t expectedVersion;    // set to 0 to ignore
+    int64_t executionNumber;    // set to 0 to ignore
+    JobExecutionStatus status;
+    const char *statusDetails;
+    bool includeJobExecutionState;
+    bool includeJobDocument;
+    const char *clientToken;
 } AwsIotJobExecutionUpdateRequest;
 
 /**
  * A request to get the status of a job execution.
  */
 typedef struct {
-	int64_t executionNumber;	// set to 0 to ignore
-	bool includeJobDocument;
-	const char *clientToken;
+    int64_t executionNumber;    // set to 0 to ignore
+    bool includeJobDocument;
+    const char *clientToken;
 } AwsIotDescribeJobExecutionRequest;
 
 /**
  * A request to get and start the next pending (not in a terminal state) job execution for a Thing.
  */
 typedef struct {
-	const char *statusDetails;
-	const char *clientToken;
+    const char *statusDetails;
+    const char *clientToken;
 } AwsIotStartNextPendingJobExecutionRequest;
 
 #ifdef __cplusplus

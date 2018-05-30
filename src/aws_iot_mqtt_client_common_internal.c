@@ -99,7 +99,7 @@ IoT_Error_t aws_iot_mqtt_internal_decode_remaining_length_from_buffer(unsigned c
 
     *readBytesLen = len;
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 uint32_t aws_iot_mqtt_internal_get_final_packet_length_from_remaining_length(uint32_t rem_len) {
@@ -261,7 +261,7 @@ IoT_Error_t aws_iot_mqtt_internal_init_header(MQTTHeader *pHeader, MessageTypes 
 
     pHeader->byte |= (1 == retained) ? 0x01 : 0x00;
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t aws_iot_mqtt_internal_send_packet(AWS_IoT_Client *pClient, size_t length, awsTimer *pTimer) {
@@ -281,7 +281,7 @@ IoT_Error_t aws_iot_mqtt_internal_send_packet(AWS_IoT_Client *pClient, size_t le
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     rc = aws_iot_mqtt_client_lock_mutex(pClient, &(pClient->clientData.tls_write_mutex));
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 #endif
@@ -295,7 +295,7 @@ IoT_Error_t aws_iot_mqtt_internal_send_packet(AWS_IoT_Client *pClient, size_t le
                          (length - sent),
                          pTimer,
                          &sentLen);
-        if(SUCCESS != rc) {
+        if(AWS_SUCCESS != rc) {
             /* there was an error writing the data */
             break;
         }
@@ -304,7 +304,7 @@ IoT_Error_t aws_iot_mqtt_internal_send_packet(AWS_IoT_Client *pClient, size_t le
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     rc = aws_iot_mqtt_client_unlock_mutex(pClient, &(pClient->clientData.tls_write_mutex));
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 #endif
@@ -312,7 +312,7 @@ IoT_Error_t aws_iot_mqtt_internal_send_packet(AWS_IoT_Client *pClient, size_t le
     if(sent == length) {
         /* record the fact that we have successfully sent the packet */
         //countdown_sec(&c->pingTimer, c->clientData.keepAliveInterval);
-        FUNC_EXIT_RC(SUCCESS);
+        FUNC_EXIT_RC(AWS_SUCCESS);
     }
 
     FUNC_EXIT_RC(rc) 
@@ -337,7 +337,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_decode_packet_remaining_len(AWS_IoT_Cl
         }
 
         rc = pClient->networkStack.read(&(pClient->networkStack), &encodedByte, 1, pTimer, &len);
-        if(SUCCESS != rc) {
+        if(AWS_SUCCESS != rc) {
             FUNC_EXIT_RC(rc);
         }
 
@@ -367,7 +367,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_read_packet(AWS_IoT_Client *pClient, a
     /* 1. read the header byte.  This has the packet type in it */
     if(NETWORK_SSL_NOTHING_TO_READ == rc) {
         return MQTT_NOTHING_TO_READ;
-    } else if(SUCCESS != rc) {
+    } else if(AWS_SUCCESS != rc) {
         return rc;
     }
 
@@ -381,7 +381,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_read_packet(AWS_IoT_Client *pClient, a
 
     /* 2. read the remaining length.  This is variable in itself */
     rc = _aws_iot_mqtt_internal_decode_packet_remaining_len(pClient, &rem_len, pTimer);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         return rc;
     }
 
@@ -391,7 +391,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_read_packet(AWS_IoT_Client *pClient, a
         do {
             rc = pClient->networkStack.read(&(pClient->networkStack), pClient->clientData.readBuf, bytes_to_be_read,
                                             pTimer, &read_len);
-            if(SUCCESS == rc) {
+            if(AWS_SUCCESS == rc) {
                 total_bytes_read += read_len;
                 if((rem_len - total_bytes_read) >= pClient->clientData.readBufSize) {
                     bytes_to_be_read = pClient->clientData.readBufSize;
@@ -399,7 +399,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_read_packet(AWS_IoT_Client *pClient, a
                     bytes_to_be_read = rem_len - total_bytes_read;
                 }
             }
-        } while(total_bytes_read < rem_len && SUCCESS == rc);
+        } while(total_bytes_read < rem_len && AWS_SUCCESS == rc);
         return MQTT_RX_BUFFER_TOO_SHORT_ERROR;
     }
 
@@ -410,7 +410,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_read_packet(AWS_IoT_Client *pClient, a
     if(rem_len > 0) {
         rc = pClient->networkStack.read(&(pClient->networkStack), pClient->clientData.readBuf + len, rem_len, pTimer,
                                         &read_len);
-        if(SUCCESS != rc || read_len != rem_len) {
+        if(AWS_SUCCESS != rc || read_len != rem_len) {
             return FAILURE;
         }
     }
@@ -519,34 +519,34 @@ static IoT_Error_t _aws_iot_mqtt_internal_handle_publish(AWS_IoT_Client *pClient
                                                    pClient->clientData.readBuf,
                                                    pClient->clientData.readBufSize);
 
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 
     rc = _aws_iot_mqtt_internal_deliver_message(pClient, topicName, topicNameLen, &msg);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 
     if(QOS0 == msg.qos) {
         /* No further processing required for QoS0 */
-        FUNC_EXIT_RC(SUCCESS);
+        FUNC_EXIT_RC(AWS_SUCCESS);
     }
 
     /* Message assumed to be QoS1 since we do not support QoS2 at this time */
     rc = aws_iot_mqtt_internal_serialize_ack(pClient->clientData.writeBuf, pClient->clientData.writeBufSize,
                                              PUBACK, 0, msg.id, &len);
 
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 
     rc = aws_iot_mqtt_internal_send_packet(pClient, len, pTimer);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *pTimer, uint8_t *pPacketType) {
@@ -562,7 +562,7 @@ IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     threadRc = aws_iot_mqtt_client_lock_mutex(pClient, &(pClient->clientData.tls_read_mutex));
-    if(SUCCESS != threadRc) {
+    if(AWS_SUCCESS != threadRc) {
         FUNC_EXIT_RC(threadRc);
     }
 #endif
@@ -573,7 +573,7 @@ IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     threadRc = aws_iot_mqtt_client_unlock_mutex(pClient, &(pClient->clientData.tls_read_mutex));
-    if(SUCCESS != threadRc && (MQTT_NOTHING_TO_READ == rc || SUCCESS == rc)) {
+    if(AWS_SUCCESS != threadRc && (MQTT_NOTHING_TO_READ == rc || AWS_SUCCESS == rc)) {
         return threadRc;
     }
 #endif
@@ -581,8 +581,8 @@ IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *
     if(MQTT_NOTHING_TO_READ == rc) {
         /* Nothing to read, not a cycle failure */
 //printf("JMF:%s:%d rc=%d\n",__FILE__,__LINE__,rc);
-        return SUCCESS;
-    } else if(SUCCESS != rc) {
+        return AWS_SUCCESS;
+    } else if(AWS_SUCCESS != rc) {
 //printf("JMF:%s:%d rc=%d\n",__FILE__,__LINE__,rc);
         return rc;
     }
@@ -638,9 +638,9 @@ IoT_Error_t aws_iot_mqtt_internal_wait_for_read(AWS_IoT_Client *pClient, uint8_t
             break;
         }
         rc = aws_iot_mqtt_internal_cycle_read(pClient, pTimer, &read_packet_type);
-    } while(((SUCCESS == rc) || (MQTT_NOTHING_TO_READ == rc)) && (read_packet_type != packetType));
+    } while(((AWS_SUCCESS == rc) || (MQTT_NOTHING_TO_READ == rc)) && (read_packet_type != packetType));
 
-    /* If rc is SUCCESS, we have received the expected
+    /* If rc is AWS_SUCCESS, we have received the expected
      * MQTT packet. Otherwise rc tells the error. */
     FUNC_EXIT_RC(rc);
 }
@@ -672,7 +672,7 @@ IoT_Error_t aws_iot_mqtt_internal_serialize_zero(unsigned char *pTxBuf, size_t t
     ptr = pTxBuf;
 
     rc = aws_iot_mqtt_internal_init_header(&header, packetType, QOS0, 0, 0);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 
@@ -683,7 +683,7 @@ IoT_Error_t aws_iot_mqtt_internal_serialize_zero(unsigned char *pTxBuf, size_t t
     ptr += aws_iot_mqtt_internal_write_len_to_buffer(ptr, 0);
     *pSerializedLength = (uint32_t) (ptr - pTxBuf);
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 #ifdef __cplusplus

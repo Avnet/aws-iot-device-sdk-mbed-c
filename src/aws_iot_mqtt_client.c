@@ -84,11 +84,11 @@ IoT_Error_t aws_iot_mqtt_client_lock_mutex(AWS_IoT_Client *pClient, IoT_Mutex_t 
         /* Should never return Error because the above request blocks until lock is obtained */
     }
 
-    if(SUCCESS != threadRc) {
+    if(AWS_SUCCESS != threadRc) {
         FUNC_EXIT_RC(threadRc);
     }
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t aws_iot_mqtt_client_unlock_mutex(AWS_IoT_Client *pClient, IoT_Mutex_t *pMutex) {
@@ -114,20 +114,20 @@ IoT_Error_t aws_iot_mqtt_set_client_state(AWS_IoT_Client *pClient, ClientState e
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     rc = aws_iot_mqtt_client_lock_mutex(pClient, &(pClient->clientData.state_change_mutex));
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         return rc;
     }
 #endif
     if(expectedCurrentState == aws_iot_mqtt_get_client_state(pClient)) {
         pClient->clientStatus.clientState = newState;
-        rc = SUCCESS;
+        rc = AWS_SUCCESS;
     } else {
         rc = MQTT_UNEXPECTED_CLIENT_STATE_ERROR;
     }
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     threadRc = aws_iot_mqtt_client_unlock_mutex(pClient, &(pClient->clientData.state_change_mutex));
-    if(SUCCESS == rc && SUCCESS != threadRc) {
+    if(AWS_SUCCESS == rc && AWS_SUCCESS != threadRc) {
         rc = threadRc;
     }
 #endif
@@ -166,31 +166,31 @@ IoT_Error_t aws_iot_mqtt_set_connect_params(AWS_IoT_Client *pClient, IoT_Client_
     pClient->clientData.options.keepAliveIntervalInSec = pNewConnectParams->keepAliveIntervalInSec;
     pClient->clientData.options.isCleanSession = pNewConnectParams->isCleanSession;
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t aws_iot_mqtt_free(AWS_IoT_Client *pClient)
 {
-    IoT_Error_t rc = SUCCESS;
+    IoT_Error_t rc = AWS_SUCCESS;
 
     if (NULL == pClient) {
         rc = NULL_VALUE_ERROR;
     }else
     {
     #ifdef _ENABLE_THREAD_SUPPORT_
-        if (rc == SUCCESS)
+        if (rc == AWS_SUCCESS)
         {
             rc = aws_iot_thread_mutex_destroy(&(pClient->clientData.state_change_mutex));
         }
 
-        if (rc == SUCCESS)
+        if (rc == AWS_SUCCESS)
         {
             rc = aws_iot_thread_mutex_destroy(&(pClient->clientData.tls_read_mutex));
         }else{
             (void)aws_iot_thread_mutex_destroy(&(pClient->clientData.tls_read_mutex));
         }
 
-        if (rc == SUCCESS)
+        if (rc == AWS_SUCCESS)
         {
             rc = aws_iot_thread_mutex_destroy(&(pClient->clientData.tls_write_mutex));
         }else{
@@ -233,23 +233,23 @@ IoT_Error_t aws_iot_mqtt_init(AWS_IoT_Client *pClient, IoT_Client_Init_Params *p
     pClient->clientData.packetTimeoutMs = pInitParams->mqttPacketTimeout_ms;
     /* Initialize default connection options */
     rc = aws_iot_mqtt_set_connect_params(pClient, &default_options);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     pClient->clientData.isBlockOnThreadLockEnabled = pInitParams->isBlockOnThreadLockEnabled;
     rc = aws_iot_thread_mutex_init(&(pClient->clientData.state_change_mutex));
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         FUNC_EXIT_RC(rc);
     }
     rc = aws_iot_thread_mutex_init(&(pClient->clientData.tls_read_mutex));
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         (void)aws_iot_thread_mutex_destroy(&(pClient->clientData.state_change_mutex));
         FUNC_EXIT_RC(rc);
     }
     rc = aws_iot_thread_mutex_init(&(pClient->clientData.tls_write_mutex));
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         (void)aws_iot_thread_mutex_destroy(&(pClient->clientData.tls_read_mutex));
         (void)aws_iot_thread_mutex_destroy(&(pClient->clientData.state_change_mutex));
         FUNC_EXIT_RC(rc);
@@ -263,7 +263,7 @@ IoT_Error_t aws_iot_mqtt_init(AWS_IoT_Client *pClient, IoT_Client_Init_Params *p
                       pInitParams->pDevicePrivateKeyLocation, pInitParams->pHostURL, pInitParams->port,
                       pInitParams->tlsHandshakeTimeout_ms, pInitParams->isSSLHostnameVerify);
 
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         #ifdef _ENABLE_THREAD_SUPPORT_
         (void)aws_iot_thread_mutex_destroy(&(pClient->clientData.tls_read_mutex));
         (void)aws_iot_thread_mutex_destroy(&(pClient->clientData.state_change_mutex));
@@ -278,7 +278,7 @@ IoT_Error_t aws_iot_mqtt_init(AWS_IoT_Client *pClient, IoT_Client_Init_Params *p
 
     pClient->clientStatus.clientState = CLIENT_STATE_INITIALIZED;
 
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 uint16_t aws_iot_mqtt_get_next_packet_id(AWS_IoT_Client *pClient) {
@@ -339,7 +339,7 @@ IoT_Error_t aws_iot_mqtt_autoreconnect_set_status(AWS_IoT_Client *pClient, bool 
         FUNC_EXIT_RC(NULL_VALUE_ERROR);
     }
     pClient->clientStatus.isAutoReconnectEnabled = newStatus;
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 IoT_Error_t aws_iot_mqtt_set_disconnect_handler(AWS_IoT_Client *pClient, iot_disconnect_handler pDisconnectHandler,
@@ -351,7 +351,7 @@ IoT_Error_t aws_iot_mqtt_set_disconnect_handler(AWS_IoT_Client *pClient, iot_dis
 
     pClient->clientData.disconnectHandler = pDisconnectHandler;
     pClient->clientData.disconnectHandlerData = pDisconnectHandlerData;
-    FUNC_EXIT_RC(SUCCESS);
+    FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 uint32_t aws_iot_mqtt_get_network_disconnected_count(AWS_IoT_Client *pClient) {

@@ -81,7 +81,7 @@ static IoT_Error_t _aws_iot_mqtt_serialize_subscribe(unsigned char *pTxBuf, size
 	}
 
 	rc = aws_iot_mqtt_internal_init_header(&header, SUBSCRIBE, QOS1, dup, 0);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 	/* write header */
@@ -99,7 +99,7 @@ static IoT_Error_t _aws_iot_mqtt_serialize_subscribe(unsigned char *pTxBuf, size
 
 	*pSerializedLen = (uint32_t) (ptr - pTxBuf);
 
-	FUNC_EXIT_RC(SUCCESS);
+	FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 /**
@@ -146,7 +146,7 @@ static IoT_Error_t _aws_iot_mqtt_deserialize_suback(uint16_t *pPacketId, uint32_
 
 	/* read remaining length */
 	decodeRc = aws_iot_mqtt_internal_decode_remaining_length_from_buffer(curData, &decodedLen, &readBytesLen);
-	if(SUCCESS != decodeRc) {
+	if(AWS_SUCCESS != decodeRc) {
 		FUNC_EXIT_RC(decodeRc);
 	}
 
@@ -166,7 +166,7 @@ static IoT_Error_t _aws_iot_mqtt_deserialize_suback(uint16_t *pPacketId, uint32_
 		pGrantedQoSs[(*pGrantedQoSCount)++] = (QoS) aws_iot_mqtt_internal_read_char(&curData);
 	}
 
-	FUNC_EXIT_RC(SUCCESS);
+	FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 /* Returns MAX_MESSAGE_HANDLERS value if no free index is available */
@@ -225,7 +225,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_subscribe(AWS_IoT_Client *pClient, con
 
 	rc = _aws_iot_mqtt_serialize_subscribe(pClient->clientData.writeBuf, pClient->clientData.writeBufSize, 0,
 										   txPacketId, 1, &pTopicName, &topicNameLen, &qos, &serializedLen);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 
@@ -236,20 +236,20 @@ static IoT_Error_t _aws_iot_mqtt_internal_subscribe(AWS_IoT_Client *pClient, con
 
 	/* send the subscribe packet */
 	rc = aws_iot_mqtt_internal_send_packet(pClient, serializedLen, &timer);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 
 	/* wait for suback */
 	rc = aws_iot_mqtt_internal_wait_for_read(pClient, SUBACK, &timer);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 
 	/* Granted QoS can be 0, 1 or 2 */
 	rc = _aws_iot_mqtt_deserialize_suback(&rxPacketId, 1, &count, grantedQoS, pClient->clientData.readBuf,
 										  pClient->clientData.readBufSize);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 
@@ -270,7 +270,7 @@ static IoT_Error_t _aws_iot_mqtt_internal_subscribe(AWS_IoT_Client *pClient, con
 			pApplicationHandlerData;
 	pClient->clientData.messageHandlers[indexOfFreeMessageHandler].qos = qos;
 
-	FUNC_EXIT_RC(SUCCESS);
+	FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 /**
@@ -314,7 +314,7 @@ IoT_Error_t aws_iot_mqtt_subscribe(AWS_IoT_Client *pClient, const char *pTopicNa
 	}
 
 	rc = aws_iot_mqtt_set_client_state(pClient, clientState, CLIENT_STATE_CONNECTED_SUBSCRIBE_IN_PROGRESS);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 
@@ -322,7 +322,7 @@ IoT_Error_t aws_iot_mqtt_subscribe(AWS_IoT_Client *pClient, const char *pTopicNa
 											 pApplicationHandler, pApplicationHandlerData);
 
 	rc = aws_iot_mqtt_set_client_state(pClient, CLIENT_STATE_CONNECTED_SUBSCRIBE_IN_PROGRESS, clientState);
-	if(SUCCESS == subRc && SUCCESS != rc) {
+	if(AWS_SUCCESS == subRc && AWS_SUCCESS != rc) {
 		subRc = rc;
 	}
 
@@ -369,31 +369,31 @@ static IoT_Error_t _aws_iot_mqtt_internal_resubscribe(AWS_IoT_Client *pClient) {
 											   &(pClient->clientData.messageHandlers[itr].topicName),
 											   &(pClient->clientData.messageHandlers[itr].topicNameLen),
 											   &(pClient->clientData.messageHandlers[itr].qos), &len);
-		if(SUCCESS != rc) {
+		if(AWS_SUCCESS != rc) {
 			FUNC_EXIT_RC(rc);
 		}
 
 		/* send the subscribe packet */
 		rc = aws_iot_mqtt_internal_send_packet(pClient, len, &timer);
-		if(SUCCESS != rc) {
+		if(AWS_SUCCESS != rc) {
 			FUNC_EXIT_RC(rc);
 		}
 
 		/* wait for suback */
 		rc = aws_iot_mqtt_internal_wait_for_read(pClient, SUBACK, &timer);
-		if(SUCCESS != rc) {
+		if(AWS_SUCCESS != rc) {
 			FUNC_EXIT_RC(rc);
 		}
 
 		/* Granted QoS can be 0, 1 or 2 */
 		rc = _aws_iot_mqtt_deserialize_suback(&packetId, 1, &count, grantedQoS, pClient->clientData.readBuf,
 											  pClient->clientData.readBufSize);
-		if(SUCCESS != rc) {
+		if(AWS_SUCCESS != rc) {
 			FUNC_EXIT_RC(rc);
 		}
 	}
 
-	FUNC_EXIT_RC(SUCCESS);
+	FUNC_EXIT_RC(AWS_SUCCESS);
 }
 
 /**
@@ -428,7 +428,7 @@ IoT_Error_t aws_iot_mqtt_resubscribe(AWS_IoT_Client *pClient) {
 
 	rc = aws_iot_mqtt_set_client_state(pClient, CLIENT_STATE_CONNECTED_IDLE,
 									   CLIENT_STATE_CONNECTED_RESUBSCRIBE_IN_PROGRESS);
-	if(SUCCESS != rc) {
+	if(AWS_SUCCESS != rc) {
 		FUNC_EXIT_RC(rc);
 	}
 
@@ -436,7 +436,7 @@ IoT_Error_t aws_iot_mqtt_resubscribe(AWS_IoT_Client *pClient) {
 
 	rc = aws_iot_mqtt_set_client_state(pClient, CLIENT_STATE_CONNECTED_RESUBSCRIBE_IN_PROGRESS,
 									   CLIENT_STATE_CONNECTED_IDLE);
-	if(SUCCESS == resubRc && SUCCESS != rc) {
+	if(AWS_SUCCESS == resubRc && AWS_SUCCESS != rc) {
 		resubRc = rc;
 	}
 

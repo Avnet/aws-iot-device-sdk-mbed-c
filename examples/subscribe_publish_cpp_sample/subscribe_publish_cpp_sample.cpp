@@ -24,20 +24,27 @@
 #include "aws_iot_mqtt_client_interface.h"
 
 #include "easy-connect.h"
-#include "WNC14A2AInterface.h"
+#include "mbed-trace/mbed_trace.h"
+
+//#include "WNC14A2AInterface.h"
 
 /**
  * @brief Default cert location
  */
-char certDirectory[PATH_MAX + 1];
-char rootCA[PATH_MAX + 1];
-char clientCRT[PATH_MAX + 1];
-char clientKey[PATH_MAX + 1];
-char CurrentWD[PATH_MAX + 1];
+//char certDirectory[PATH_MAX + 1];
+//char rootCA[PATH_MAX + 1];
+//char clientCRT[PATH_MAX + 1];
+//char clientKey[PATH_MAX + 1];
+//char CurrentWD[PATH_MAX + 1];
 char cPayload[100];
 
-Thread aws_subscribe_publish(osPriorityNormal, 16*1024, NULL);
+//Thread aws_subscribe_publish(osPriorityNormal, 16*1024, NULL);
+Thread aws_subscribe_publish(osPriorityNormal, 8*1024, NULL);
 void   aws_subscribe_publish_task(void);
+
+void trace_printer(const char* str) {
+    printf("%s\r\n",str);
+}
 
 /**
  * @brief This parameter will avoid infinite loop of publish and exit the program after certain number of publishes
@@ -79,6 +86,9 @@ void disconnectCallbackHandler(AWS_IoT_Client *pClient, void *data)
 
 int main() 
 {
+    mbed_trace_init();
+    mbed_trace_print_function_set(trace_printer);
+
     printf("AWS %s Example.\n",__FILE__);
     IOT_INFO("\nAWS IoT SDK Version %d.%d.%d-%s\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_TAG);
 
@@ -102,34 +112,34 @@ void aws_subscribe_publish_task()
     IoT_Publish_Message_Params paramsQOS0;
     IoT_Publish_Message_Params paramsQOS1;
 
-    memset(rootCA, 0x00, sizeof(rootCA));
-    memset(clientCRT, 0x00, sizeof(clientCRT));
-    memset(clientKey, 0x00, sizeof(clientKey));
-    memset(CurrentWD, 0x00, sizeof(CurrentWD));
+//    memset(rootCA, 0x00, sizeof(rootCA));
+//    memset(clientCRT, 0x00, sizeof(clientCRT));
+//    memset(clientKey, 0x00, sizeof(clientKey));
+//    memset(CurrentWD, 0x00, sizeof(CurrentWD));
     memset(cPayload, 0x00, sizeof(cPayload));
-    memset(certDirectory, 0x00, sizeof(certDirectory));
+//    memset(certDirectory, 0x00, sizeof(certDirectory));
 
-    snprintf(rootCA, sizeof(rootCA), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_ROOT_CA_FILENAME);
-    snprintf(clientCRT, sizeof(clientCRT), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_CERTIFICATE_FILENAME);
-    snprintf(clientKey, sizeof(clientKey), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_PRIVATE_KEY_FILENAME);
+//    snprintf(rootCA, sizeof(rootCA), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_ROOT_CA_FILENAME);
+//    snprintf(clientCRT, sizeof(clientCRT), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_CERTIFICATE_FILENAME);
+//    snprintf(clientKey, sizeof(clientKey), "%s/%s/%s", CurrentWD, certDirectory, AWS_IOT_PRIVATE_KEY_FILENAME);
 
-    IOT_DEBUG("rootCA %s", rootCA);
-    IOT_DEBUG("clientCRT %s", clientCRT);
-    IOT_DEBUG("clientKey %s", clientKey);
+//    IOT_DEBUG("rootCA %s", rootCA);
+//    IOT_DEBUG("clientCRT %s", clientCRT);
+//    IOT_DEBUG("clientKey %s", clientKey);
 
     mqttInitParams.enableAutoReconnect = false; // We enable this later below
     mqttInitParams.pHostURL = AWS_IOT_MQTT_HOST;
     mqttInitParams.port = AWS_IOT_MQTT_PORT;
-    mqttInitParams.pRootCALocation = rootCA;
-    mqttInitParams.pDeviceCertLocation = clientCRT;
-    mqttInitParams.pDevicePrivateKeyLocation = clientKey;
+    mqttInitParams.pRootCALocation = AWS_IOT_ROOT_CA_FILENAME;
+    mqttInitParams.pDeviceCertLocation = AWS_IOT_CERTIFICATE_FILENAME;
+    mqttInitParams.pDevicePrivateKeyLocation = AWS_IOT_PRIVATE_KEY_FILENAME;
     mqttInitParams.mqttCommandTimeout_ms = 20000;
     mqttInitParams.tlsHandshakeTimeout_ms = 5000;
     mqttInitParams.isSSLHostnameVerify = true;
     mqttInitParams.disconnectHandler = disconnectCallbackHandler;
     mqttInitParams.disconnectHandlerData = NULL;
     rc = aws_iot_mqtt_init(&client, &mqttInitParams);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         IOT_ERROR("aws_iot_mqtt_init returned error : %d ", rc);
         return;
         }
@@ -143,7 +153,7 @@ void aws_subscribe_publish_task()
 
     IOT_INFO("Connecting...");
     rc = aws_iot_mqtt_connect(&client, &connectParams);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         IOT_ERROR("Error(%d) connecting to %s:%d", rc, mqttInitParams.pHostURL, mqttInitParams.port);
         return;
         }
@@ -154,14 +164,14 @@ void aws_subscribe_publish_task()
      *  #AWS_IOT_MQTT_MAX_RECONNECT_WAIT_INTERVAL
      */
     rc = aws_iot_mqtt_autoreconnect_set_status(&client, true);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         IOT_ERROR("Unable to set Auto Reconnect to true - %d", rc);
         return;
         }
 
     IOT_INFO("Subscribing...");
     rc = aws_iot_mqtt_subscribe(&client, "sdkTest/sub", 11, QOS0, iot_subscribe_callback_handler, NULL);
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         IOT_ERROR("Error subscribing : %d ", rc);
         return;
         }
@@ -180,10 +190,7 @@ void aws_subscribe_publish_task()
         infinitePublishFlag = false;
         }
 
-//    printf("JMF: start publish/subscribe [rc=0x%04X]\n",rc);
-    while( (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || SUCCESS == rc) && (publishCount > 0 || infinitePublishFlag)) {
-        IOT_INFO("-->sleep");
-        wait(5);
+    while( (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || AWS_SUCCESS == rc) && (publishCount > 0 || infinitePublishFlag)) {
         sprintf(cPayload, "%s : %ld ", "hello from SDK QOS0", i++);
         paramsQOS0.payloadLen = strlen(cPayload);
         rc = aws_iot_mqtt_publish(&client, "sdkTest/sub", 11, &paramsQOS0);
@@ -195,17 +202,16 @@ void aws_subscribe_publish_task()
         rc = aws_iot_mqtt_publish(&client, "sdkTest/sub", 11, &paramsQOS1);
         if (rc == MQTT_REQUEST_TIMEOUT_ERROR) {
             IOT_WARN("QOS1 publish ack not received.\n");
-            rc = SUCCESS;
+            rc = AWS_SUCCESS;
             }
         if(publishCount > 0) 
             publishCount--;
 
-//        printf("JMF: yield for 100 msec...");
-        //Max time the yield function will wait for read messages
-//        rc = aws_iot_mqtt_yield(&client, 100);
+        IOT_INFO("-->sleep");
+        wait(5);
         }
 
-    if(SUCCESS != rc) {
+    if(AWS_SUCCESS != rc) {
         IOT_ERROR("An error occurred in the loop.\n");
         } 
     else{

@@ -21,7 +21,7 @@
 #include "mbed.h"
 
 #include "easy-connect.h"
-#include "WNC14A2AInterface.h"
+//#include "WNC14A2AInterface.h"
 
 #define MBEDTLS_FS_IO 1
 
@@ -52,6 +52,7 @@
 
 NetworkInterface *network = NULL;
 TCPSocket        mbedtls_socket;
+bool             network_connected = false;
 
 /*
  * Initialize a context
@@ -63,12 +64,14 @@ void mbedtls_aws_init( mbedtls_net_context *ctx )
     if( network != NULL )
         network->disconnect();       //disconnect from the current network
 
+    network_connected = false;
     network = easy_connect(true);
     if (!network) {
         IOT_DEBUG("Network Connection Failed!");
-        FUNC_EXIT;
+        return;
         }
     IOT_DEBUG("Modem SW Revision: %s", FIRMWARE_REV(network));
+    network_connected = true;
     ctx->fd = 1;
 }
 
@@ -78,7 +81,13 @@ void mbedtls_aws_init( mbedtls_net_context *ctx )
  */
 int mbedtls_aws_connect( mbedtls_net_context *ctx, const char *host, uint16_t port, int proto )
 {
+    int fd = ((mbedtls_net_context *) ctx)->fd;
     FUNC_ENTRY;
+    if( !network_connected ) {
+        IOT_DEBUG("No network connection");
+        FUNC_EXIT_RC(NETWORK_ERR_NET_CONNECT_FAILED);
+        }
+
     int ret = mbedtls_socket.open(network) || mbedtls_socket.connect(host,port);
     if( ret != 0 ){
         IOT_DEBUG("Socket Open Failed - %d",ret);
@@ -111,14 +120,12 @@ int mbedtls_aws_accept( mbedtls_net_context *bind_ctx,
  */
 int mbedtls_aws_set_block( mbedtls_net_context *ctx )
 {
-//printf("JMFNETWORK:%s:%d enable blocking\n",__FILE__,__LINE__);
         mbedtls_socket.set_blocking(true);
         return 0;
 }
 
 int mbedtls_aws_set_nonblock( mbedtls_net_context *ctx )
 {
-//printf("JMFNETWORK:%s:%d disable blocking\n",__FILE__,__LINE__);
     mbedtls_socket.set_blocking(false);
     return 0;
 }
@@ -159,7 +166,6 @@ int mbedtls_aws_recv( void *ctx, unsigned char *buf, size_t len )
  */
 int mbedtls_aws_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_t timeout )
 {
-//printf("JMFNETWORK:%s:%d asking to read %d byes with a timeout of %d\n",__FILE__,__LINE__, len, (int)timeout);
     int   ret, ttime;
     Timer t;
     int   fd = ((mbedtls_net_context *) ctx)->fd;
@@ -175,11 +181,9 @@ int mbedtls_aws_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_
             ret = mbedtls_socket.recv( buf, len );
        }
     while( ttime < (int)timeout && ret == NSAPI_ERROR_WOULD_BLOCK );
-//printf("JMFNETWORK:%s:%d read loop has ret = %d (ttime=%d)\n",__FILE__,__LINE__, ret,ttime);
 
     if( ret < 0 && ttime >= (int)timeout )
         ret = MBEDTLS_ERR_SSL_TIMEOUT;
-//printf("JMFNETWORK:%s:%d leaving with a count of %d\n",__FILE__,__LINE__, ret);
     FUNC_EXIT_RC(ret);
 }
 
@@ -209,7 +213,7 @@ int mbedtls_aws_send( void *ctx, const unsigned char *buf, size_t len )
 void mbedtls_aws_free( mbedtls_net_context *ctx )
 {
     FUNC_ENTRY;
-    if( ctx->fd == -1 ){
+    if( !network_connected || ctx->fd < 0 ) {
         FUNC_EXIT;
         }
 
