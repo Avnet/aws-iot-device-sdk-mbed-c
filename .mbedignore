@@ -1,7 +1,3 @@
 mbed_settings.pyc
-examples/jobs_sample/
-examples/shadow_sample/
-examples/shadow_sample_console_echo/
-examples/subscribe_publish_library_sample/
-examples/subscribe_publish_sample/
-platform/ezconnect/wnc14a2a-driver/
+#examples/shadow_sample/
+examples/subscribe_publish_cpp_sample/

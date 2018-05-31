@@ -36,7 +36,7 @@ void   aws_subscribe_publish_task(void);
 /**
  * @brief This parameter will avoid infinite loop of publish and exit the program after certain number of publishes
  */
-uint32_t publishCount = 0;
+uint32_t publishCount = 100;
 
 void iot_subscribe_callback_handler(AWS_IoT_Client *pClient, char *topicName, uint16_t topicNameLen, IoT_Publish_Message_Params *params, void *pData) 
 {
@@ -161,7 +161,9 @@ void aws_subscribe_publish_task()
         infinitePublishFlag = false;
         }
 
-    while( (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || AWS_SUCCESS == rc) && (publishCount > 0 || infinitePublishFlag)) {
+    while( (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || AWS_SUCCESS == rc) && 
+           (publishCount > 0 || infinitePublishFlag)) {
+
         sprintf(cPayload, "%s : %ld ", "hello from SDK QOS0", i++);
         paramsQOS0.payloadLen = strlen(cPayload);
         rc = aws_iot_mqtt_publish(&client, "sdkTest/sub", 11, &paramsQOS0);
