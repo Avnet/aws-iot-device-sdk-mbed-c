@@ -36,7 +36,7 @@ void   aws_subscribe_publish_task(void);
 /**
  * @brief This parameter will avoid infinite loop of publish and exit the program after certain number of publishes
  */
-uint32_t publishCount = 100;
+uint32_t publishCount = 0;
 
 void iot_subscribe_callback_handler(AWS_IoT_Client *pClient, char *topicName, uint16_t topicNameLen, IoT_Publish_Message_Params *params, void *pData) 
 {
@@ -85,7 +85,6 @@ void aws_subscribe_publish_task()
 {
     bool        infinitePublishFlag = true;
     IoT_Error_t rc = FAILURE;
-
 
     int32_t i = 0;
 
@@ -167,12 +166,18 @@ void aws_subscribe_publish_task()
         sprintf(cPayload, "%s : %ld ", "hello from SDK QOS0", i++);
         paramsQOS0.payloadLen = strlen(cPayload);
         rc = aws_iot_mqtt_publish(&client, "sdkTest/sub", 11, &paramsQOS0);
+        if(AWS_SUCCESS != rc) {
+            IOT_WARN("An error occurred in aws_iot_mqtt_publish(1), rc=%d\n",rc);
+            } 
         if(publishCount > 0) 
             publishCount--;
 
         sprintf(cPayload, "%s : %ld ", "hello from SDK QOS1", i++);
         paramsQOS1.payloadLen = strlen(cPayload);
         rc = aws_iot_mqtt_publish(&client, "sdkTest/sub", 11, &paramsQOS1);
+        if(AWS_SUCCESS != rc) {
+            IOT_WARN("An error occurred in aws_iot_mqtt_publish(2), rc=%d\n",rc);
+            } 
         if (rc == MQTT_REQUEST_TIMEOUT_ERROR) {
             IOT_WARN("QOS1 publish ack not received.\n");
             rc = AWS_SUCCESS;
@@ -180,12 +185,17 @@ void aws_subscribe_publish_task()
         if(publishCount > 0) 
             publishCount--;
 
-        IOT_INFO("-->sleep");
-        wait(5);
+        IOT_INFO("\n-->yield for MQTT read\n");
+        //Max time the yield function will wait for read messages
+        rc = aws_iot_mqtt_yield(&client, 100);
+        
+        if(NETWORK_ATTEMPTING_RECONNECT == rc) 
+                continue; // If the client is attempting to reconnect we will skip the rest of the loop.
+
         }
 
     if(AWS_SUCCESS != rc) {
-        IOT_ERROR("An error occurred in the loop.\n");
+        IOT_ERROR("An error occurred in the loop, rc=%d\n",rc);
         } 
     else{
         IOT_INFO("Publish done\n");

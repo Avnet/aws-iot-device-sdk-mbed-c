@@ -166,19 +166,14 @@ int mbedtls_aws_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_
 {
     int   ret, ttime;
     Timer t;
-    int   fd = ((mbedtls_net_context *) ctx)->fd;
     FUNC_ENTRY;
-    if( fd < 0 )
-        FUNC_EXIT_RC(MBEDTLS_ERR_NET_INVALID_CONTEXT );
 
     t.start();
     do {
-        ret = mbedtls_socket.recv( buf, len );
+        ret = mbedtls_aws_recv( ctx, buf, len );
         ttime = t.read_ms();
-        if( ret == 0 && ttime < (int)timeout )
-            ret = mbedtls_socket.recv( buf, len );
        }
-    while( ttime < (int)timeout && ret == NSAPI_ERROR_WOULD_BLOCK );
+    while( ttime < (int)timeout && ret < 0 );
 
     if( ret < 0 && ttime >= (int)timeout )
         ret = MBEDTLS_ERR_SSL_TIMEOUT;
@@ -190,18 +185,22 @@ int mbedtls_aws_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_
  */
 int mbedtls_aws_send( void *ctx, const unsigned char *buf, size_t len )
 {
-    int ret;
+    int ret = NSAPI_ERROR_WOULD_BLOCK;
+    Timer t;
     int fd = ((mbedtls_net_context *) ctx)->fd;
 
     FUNC_ENTRY;
 
     if( fd < 0 )
-        FUNC_EXIT_RC(MBEDTLS_ERR_NET_INVALID_CONTEXT );
+        FUNC_EXIT_RC(NETWORK_PHYSICAL_LAYER_DISCONNECTED);
 
-    while( (ret = mbedtls_socket.send(buf, len)) == NSAPI_ERROR_WOULD_BLOCK )
-        /* keep trying */;
-    if( ret < 0 ) 
-        ret = (ret == NSAPI_ERROR_WOULD_BLOCK )? MBEDTLS_ERR_SSL_WANT_WRITE : MBEDTLS_ERR_NET_SEND_FAILED;
+    t.start();
+    while( ret == NSAPI_ERROR_WOULD_BLOCK && t.read_ms() < 100)
+        ret = mbedtls_socket.send(buf, len);
+
+    if( ret < 0 )
+        ret = MBEDTLS_ERR_NET_SEND_FAILED;
+
     FUNC_EXIT_RC( ret );
 }
 

@@ -44,7 +44,7 @@
 #include "awscerts.h"
 
 /* This is the value used for ssl read timeout (in msec) */
-#define IOT_SSL_READ_TIMEOUT 10000
+#define IOT_SSL_READ_TIMEOUT 1
 
 /* This defines the value of the debug buffer that gets allocated.
  * The value can be altered based on memory constraints
@@ -376,12 +376,15 @@ IoT_Error_t iot_tls_read(Network *pNetwork, unsigned char *pMsg, size_t len, aws
         while( ret == 0 && !has_timer_expired(timer) )
             ret = mbedtls_ssl_read(ssl, pMsg, len);
 
+        if (ret == 0) {
+            FUNC_EXIT_RC(NETWORK_SSL_NOTHING_TO_READ);
+            }
         if (ret > 0) {
             rxLen += ret;
             pMsg += ret;
             len -= ret;
             } 
-        else if (ret == 0 || (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE && ret != MBEDTLS_ERR_SSL_TIMEOUT)) {
+        else if ((ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE && ret != MBEDTLS_ERR_SSL_TIMEOUT)) {
             FUNC_EXIT_RC(NETWORK_SSL_READ_ERROR);
             }
         }

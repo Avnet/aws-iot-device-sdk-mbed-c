@@ -54,7 +54,6 @@ static IoT_Error_t _aws_iot_mqtt_handle_disconnect(AWS_IoT_Client *pClient) {
     IoT_Error_t rc;
 
     FUNC_ENTRY;
-//printf("JMF: called aws_iot_mqtt_handle_disconnect\n");
     rc = aws_iot_mqtt_disconnect(pClient);
     if(rc != AWS_SUCCESS) {
         // If the aws_iot_mqtt_internal_send_packet prevents us from sending a disconnect packet then we have to clean the stack
@@ -67,7 +66,6 @@ static IoT_Error_t _aws_iot_mqtt_handle_disconnect(AWS_IoT_Client *pClient) {
 
     /* Reset to 0 since this was not a manual disconnect */
     pClient->clientStatus.clientState = CLIENT_STATE_DISCONNECTED_ERROR;
-//printf("JMF: %s:%d\n",__FILE__,__LINE__);
     FUNC_EXIT_RC(NETWORK_DISCONNECTED_ERROR);
 }
 
@@ -129,7 +127,6 @@ static IoT_Error_t _aws_iot_mqtt_keep_alive(AWS_IoT_Client *pClient) {
     }
 
     if(pClient->clientStatus.isPingOutstanding) {
-//printf("JMF1\n");
         rc = _aws_iot_mqtt_handle_disconnect(pClient);
         FUNC_EXIT_RC(rc);
     }
@@ -149,7 +146,6 @@ static IoT_Error_t _aws_iot_mqtt_keep_alive(AWS_IoT_Client *pClient) {
     rc = aws_iot_mqtt_internal_send_packet(pClient, serialized_len, &timer);
     if(AWS_SUCCESS != rc) {
         //If sending a PING fails we can no longer determine if we are connected.  In this case we decide we are disconnected and begin reconnection attempts
-//printf("JMF2\n");
         rc = _aws_iot_mqtt_handle_disconnect(pClient);
         FUNC_EXIT_RC(rc);
     }
@@ -188,26 +184,22 @@ static IoT_Error_t _aws_iot_mqtt_internal_yield(AWS_IoT_Client *pClient, uint32_
     awsTimer timer;
     init_timer(&timer);
     countdown_ms(&timer, timeout_ms);
-//printf("JMF: called internal_yeld\n");
     FUNC_ENTRY;
 
     // evaluate timeout at the end of the loop to make sure the actual yield runs at least once
     do {
         clientState = aws_iot_mqtt_get_client_state(pClient);
         if(CLIENT_STATE_PENDING_RECONNECT == clientState) {
-//printf("JMF: pending_reconnect\n");
             if(AWS_IOT_MQTT_MAX_RECONNECT_WAIT_INTERVAL < pClient->clientData.currentReconnectWaitInterval) {
                 yieldRc = NETWORK_RECONNECT_TIMED_OUT_ERROR;
                 break;
             }
-//printf("JMF: do reconnect\n");
             yieldRc = _aws_iot_mqtt_handle_reconnect(pClient);
             /* Network reconnect attempted, check if yield timer expired before
              * doing anything else */
             continue;
         }
 
-//printf("JMF: do internal_cycle_read \n");
         yieldRc = aws_iot_mqtt_internal_cycle_read(pClient, &timer, &packet_type);
         if(AWS_SUCCESS == yieldRc) {
             yieldRc = _aws_iot_mqtt_keep_alive(pClient);
@@ -215,14 +207,11 @@ static IoT_Error_t _aws_iot_mqtt_internal_yield(AWS_IoT_Client *pClient, uint32_
             // SSL read and write errors are terminal, connection must be closed and retried
             if(NETWORK_SSL_READ_ERROR == yieldRc || NETWORK_SSL_READ_TIMEOUT_ERROR == yieldRc
                 || NETWORK_SSL_WRITE_ERROR == yieldRc || NETWORK_SSL_WRITE_TIMEOUT_ERROR == yieldRc) {
-//printf("JMF3 %d\n",yieldRc);
                 yieldRc = _aws_iot_mqtt_handle_disconnect(pClient);
             }
         }
 
-//printf("JMF: keepalive said: %d \n", yieldRc);
         if(NETWORK_DISCONNECTED_ERROR == yieldRc) {
-//printf("JMF: was a disconnect erro \n");
             pClient->clientData.counterNetworkDisconnected++;
             if(1 == pClient->clientStatus.isAutoReconnectEnabled) {
                 yieldRc = aws_iot_mqtt_set_client_state(pClient, CLIENT_STATE_DISCONNECTED_ERROR,
@@ -244,7 +233,6 @@ static IoT_Error_t _aws_iot_mqtt_internal_yield(AWS_IoT_Client *pClient, uint32_
             break;
         }
     } while(!has_timer_expired(&timer));
-//printf("JMF: exit internal_yield with %d\n",yieldRc);
 
     FUNC_EXIT_RC(yieldRc);
 }
@@ -287,7 +275,6 @@ IoT_Error_t aws_iot_mqtt_yield(AWS_IoT_Client *pClient, uint32_t timeout_ms) {
     if(CLIENT_STATE_PENDING_RECONNECT != clientState) {
         /* Check if network is disconnected and auto-reconnect is not enabled */
         if(!aws_iot_mqtt_is_client_connected(pClient)) {
-//printf("JMF: %s:%d\n",__FILE__,__LINE__);
             FUNC_EXIT_RC(NETWORK_DISCONNECTED_ERROR);
         }
 

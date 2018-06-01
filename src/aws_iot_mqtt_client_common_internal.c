@@ -362,7 +362,6 @@ static IoT_Error_t _aws_iot_mqtt_internal_read_packet(AWS_IoT_Client *pClient, a
     read_len = 0;
 
     rc = pClient->networkStack.read(&(pClient->networkStack), pClient->clientData.readBuf, 1, pTimer, &read_len);
-//printf("JMF:%s:%d read %d from networkStack.read\n",__FILE__,__LINE__,rc);
 
     /* 1. read the header byte.  This has the packet type in it */
     if(NETWORK_SSL_NOTHING_TO_READ == rc) {
@@ -551,7 +550,6 @@ static IoT_Error_t _aws_iot_mqtt_internal_handle_publish(AWS_IoT_Client *pClient
 
 IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *pTimer, uint8_t *pPacketType) {
     IoT_Error_t rc;
-//printf("JMF! in aws_iot_mqtt_internal_cycle_read\n");
 #ifdef _ENABLE_THREAD_SUPPORT_
     IoT_Error_t threadRc;
 #endif
@@ -569,7 +567,6 @@ IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *
 
     /* read the socket, see what work is due */
     rc = _aws_iot_mqtt_internal_read_packet(pClient, pTimer, pPacketType);
-//printf("JMF:%s:%d rc=%d\n",__FILE__,__LINE__,rc);
 
 #ifdef _ENABLE_THREAD_SUPPORT_
     threadRc = aws_iot_mqtt_client_unlock_mutex(pClient, &(pClient->clientData.tls_read_mutex));
@@ -580,13 +577,10 @@ IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *
 
     if(MQTT_NOTHING_TO_READ == rc) {
         /* Nothing to read, not a cycle failure */
-//printf("JMF:%s:%d rc=%d\n",__FILE__,__LINE__,rc);
         return AWS_SUCCESS;
     } else if(AWS_SUCCESS != rc) {
-//printf("JMF:%s:%d rc=%d\n",__FILE__,__LINE__,rc);
         return rc;
     }
-//printf("JMF: cycle_read got a char, switch on %d\n",*pPacketType);
 
     switch(*pPacketType) {
         case CONNACK:
@@ -616,7 +610,6 @@ IoT_Error_t aws_iot_mqtt_internal_cycle_read(AWS_IoT_Client *pClient, awsTimer *
         }
     }
 
-//printf("JMF:%s:%d EXITING rc=%d\n",__FILE__,__LINE__,rc);
     return rc;
 }
 
